@@ -1,8 +1,8 @@
 // Load the library synchronously
-loadScriptSync("https://cdn.jsdelivr.net/gh/xMichal123/babylon-libraries@latest/gameControlsManager.js");
-loadScriptSync("https://cdn.jsdelivr.net/gh/xMichal123/babylon-libraries@latest/scoreManager.js");
-loadScriptSync("https://cdn.jsdelivr.net/gh/xMichal123/babylon-libraries@d1b31c7/gameOverManager.js");
-loadScriptSync("https://cdn.jsdelivr.net/gh/xMichal123/babylon-libraries@c413ac6/slideGestureDetector.js");
+loadScriptSync("common/gameControlsManager.js");
+loadScriptSync("common/scoreManager.js");
+loadScriptSync("common/gameOverManager.js");
+loadScriptSync("common/slideGestureDetector.js");
 
 function removeIframe(iframe) {
     if (iframe && iframe.parentNode) {
