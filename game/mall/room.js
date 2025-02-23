@@ -63,11 +63,11 @@ function startGame(gameName) {
             if (window.useMoreGamesLink) {
                 window.location.href = 'https://www.joyinmall.com/game';
             } else {
-                currentActiveScene = scene;
+                currentActiveScene = mallScene;
                 iframe.contentWindow.gameScene.dispose();
                 removeIframe(iframe);
                 advancedTexture.rootContainer.isVisible = false;
-                scene.attachControl(canvas, true);
+                mallScene.attachControl(canvas, true);
             }
         }
     );
@@ -77,16 +77,16 @@ function startGame(gameName) {
     window.gameScene = iframe.contentWindow.gameScene;
     iframe.contentWindow.init();
     currentActiveScene = iframe.contentWindow.gameScene;
-    scene.detachControl();
+    mallScene.detachControl();
 }
 
-window.createGameRoom = (games, scene) => {
+window.createGameRoom = (games) => {
     // Define constants
     const radius = 6; // Radius of the circular path
     const verticalLimit = Math.PI / 8; // Limit for vertical rotation (in radians)
 
     // Create a camera that will simulate the player's view
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(radius, 2, 0), scene);
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(radius, 2, 0), mallScene);
 
     // Detach default camera controls
     camera.detachControl(canvas);
@@ -109,8 +109,8 @@ window.createGameRoom = (games, scene) => {
     camera.rotation.y = Math.PI + camera.rotation.y;
 
 // Constants – adjust these to change the shape and behavior
-const RECT_WIDTH = 12;         // Overall width of the rounded rectangle
-const RECT_HEIGHT = 12;        // Overall height of the rounded rectangle
+let RECT_WIDTH = 12;         // Overall width of the rounded rectangle
+let RECT_HEIGHT = 12;        // Overall height of the rounded rectangle
 const CORNER_RADIUS = 2;       // Radius of the rounded corners
 
 const SENSITIVITY_HORIZONTAL = 0.02; // Adjusts how fast the camera moves along the path horizontally
@@ -234,9 +234,9 @@ function getPointOnRoundedRect(s) {
 let pathDistance = 0;
 
 // Event listener for pointer interaction
-scene.onPointerObservable.add((pointerInfo) => {
+mallScene.onPointerObservable.add((pointerInfo) => {
     if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-        scene.onPointerMove = (evt) => {
+        mallScene.onPointerMove = (evt) => {
             // Update horizontal path distance based on pointer movement
             pathDistance += evt.movementX * SENSITIVITY_HORIZONTAL;
             // Update vertical offset within limits
@@ -271,33 +271,33 @@ scene.onPointerObservable.add((pointerInfo) => {
     }
 });
 
-    scene.onPointerUp = () => {
-        scene.onPointerMove = null;
+mallScene.onPointerUp = () => {
+    mallScene.onPointerMove = null;
     };
 
     // Light setup
-    /*var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    /*var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), mallScene);
     light.intensity = 0.7;*/
 
-    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), mallScene);
     light.intensity = 0.5;
 
-    const light2 = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, -1, 0), scene);
+    const light2 = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, -1, 0), mallScene);
     light2.intensity = 0.5;
 
-    createRoom(scene);
+    createRoom(mallScene);
 
     BABYLON.SceneLoader.ImportMesh(
         "", // Empty if loading all meshes in the file
         "https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/", // GitHub path
         "arcade-machine.glb", // File name
-        scene,
+        mallScene,
         function (meshes, particleSystems, skeletons, animationGroups) {
             BABYLON.SceneLoader.ImportMesh(
                 "", // Empty if loading all meshes in the file
                 "https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/", // GitHub path
                 "start-button.glb", // File name
-                scene,
+                mallScene,
                 function (bmeshes, bparticleSystems, bskeletons, banimationGroups) {
             const originalMesh = meshes[0]; // Assume the first mesh is the main one
             const originalButton = bmeshes[0];
@@ -317,7 +317,7 @@ scene.onPointerObservable.add((pointerInfo) => {
             //const center = new BABYLON.Vector3(0, 0, 0);
 
             // Assign a material
-            const buttonMaterial = new BABYLON.StandardMaterial("buttonMaterial", scene);
+            const buttonMaterial = new BABYLON.StandardMaterial("buttonMaterial", mallScene);
             buttonMaterial.diffuseColor = BABYLON.Color3.Red();
 
             for (let i = 0; i < numberOfInstances; i++) {
@@ -343,7 +343,7 @@ scene.onPointerObservable.add((pointerInfo) => {
                 //button.lookAt(center);
                 button.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(-Math.PI / 2, 0, Math.PI);//button.rotationQuaternion.multiply(BABYLON.Quaternion.FromEulerAngles(-Math.PI / 2, 0, 0));
 
-                button.actionManager = new BABYLON.ActionManager(scene);
+                button.actionManager = new BABYLON.ActionManager(mallScene);
 
                 // **Click Action**
                 button.actionManager.registerAction(
@@ -354,7 +354,7 @@ scene.onPointerObservable.add((pointerInfo) => {
 
                 button.getChildMeshes().forEach((child) => {
                     child.isPickable = true;
-                    child.actionManager = new BABYLON.ActionManager(scene);
+                    child.actionManager = new BABYLON.ActionManager(mallScene);
                     child.actionManager.registerAction(
                         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
                             startGame(iter);
@@ -382,7 +382,7 @@ scene.onPointerObservable.add((pointerInfo) => {
                             replaceTexture(mesh.material, videoTexture);
                         } else if (mesh.name.endsWith('Body')) {
                             mesh.material = mesh.material.clone();
-                            let texture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/" + iter + "/machine-body.jpg", scene);
+                            let texture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/" + iter + "/machine-body.jpg", mallScene);
                             replaceTexture(mesh.material, texture);
                         }
                     }
@@ -405,13 +405,13 @@ function replaceTexture(material, texture) {
     }
 }
 
-function createRoom(scene) {
+function createRoom() {
         var faceColors = new Array(6);
 
     faceColors[4] = new BABYLON.Color4(1,0,0,0.25);   // red top
     faceColors[1] = new BABYLON.Color4(0,1,0,0.25);   // green front
 
-    const maxRowWidth = 20;
+    const maxRowWidth = roomEdgeLength;
     const boxHeight = 3.5;
     const heightOffset = -1;
     const boxSize = maxRowWidth + 0.03;
@@ -423,15 +423,15 @@ function createRoom(scene) {
         //faceColors: faceColors
     };
 
-    var box = BABYLON.MeshBuilder.CreateBox('box', options, scene);
+    var box = BABYLON.MeshBuilder.CreateBox('box', options, mallScene);
     //var box=Mesh.CreateBox("box",5,scene);
     box.showBoundingBox=false;
     //box.position = //GameConstants.SHOP_POSITION;
     box.position.y = heightOffset + boxHeight / 2;//(upProducts[0].height * scale + downProducts[0].height * scale) / 2;
 
     //Create the mirror material
-		var mirrorMaterial = new BABYLON.StandardMaterial("mirror", scene);
-		const mirrorTexture = new BABYLON.MirrorTexture("mirror", 1024, scene, true);
+		var mirrorMaterial = new BABYLON.StandardMaterial("mirror", mallScene);
+		const mirrorTexture = new BABYLON.MirrorTexture("mirror", 1024, mallScene, true);
     mirrorMaterial.reflectionTexture = mirrorTexture;
     //mirrorMaterial.diffuseTexture = mirrorTexture;
 		//mirrorTexture.mirrorPlane = reflector;
@@ -455,66 +455,66 @@ function createRoom(scene) {
 
 
     //const exitButtonBuilder = new ExitButtonBuilder();
-    buildExitButton(new BABYLON.Vector3(mx, (ty + dty) / 2, wz + 0.01), scene);
+    buildExitButton(new BABYLON.Vector3(mx, (ty + dty) / 2, wz + 0.01), mallScene);
 
-    const leftGlass = BABYLON.MeshBuilder.CreatePlane("leftGlass", { width: boxSize / 2 - doorWidth / 2, height: boxHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+    const leftGlass = BABYLON.MeshBuilder.CreatePlane("leftGlass", { width: boxSize / 2 - doorWidth / 2, height: boxHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, mallScene);
     leftGlass.position = new BABYLON.Vector3((lx + dlx) / 2, my, wz);
-    decorateGlass(leftGlass, scene);
+    decorateGlass(leftGlass, mallScene);
 
-    const rightGlass = BABYLON.MeshBuilder.CreatePlane("rightGlass", { width: boxSize / 2 - doorWidth / 2, height: boxHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+    const rightGlass = BABYLON.MeshBuilder.CreatePlane("rightGlass", { width: boxSize / 2 - doorWidth / 2, height: boxHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, mallScene);
     rightGlass.position = new BABYLON.Vector3((rx + drx) / 2, my, wz);
-    decorateGlass(rightGlass, scene);
+    decorateGlass(rightGlass, mallScene);
 
-    const topGlass = BABYLON.MeshBuilder.CreatePlane("topGlass", { width: doorWidth, height: boxHeight - doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+    const topGlass = BABYLON.MeshBuilder.CreatePlane("topGlass", { width: doorWidth, height: boxHeight - doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, mallScene);
     topGlass.position = new BABYLON.Vector3(mx, (ty + dty) / 2, wz);
-    decorateGlass(topGlass, scene);
+    decorateGlass(topGlass, mallScene);
 
-    const leftDoorGlass = BABYLON.MeshBuilder.CreatePlane("leftDoorGlass", { width: doorWidth / 2, height: doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+    const leftDoorGlass = BABYLON.MeshBuilder.CreatePlane("leftDoorGlass", { width: doorWidth / 2, height: doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, mallScene);
     leftDoorGlass.position = new BABYLON.Vector3((mx + dlx) / 2, (dty + by) / 2, wz);
-    decorateGlass(leftDoorGlass, scene);
+    decorateGlass(leftDoorGlass, mallScene);
 
-    const rightDoorGlass = BABYLON.MeshBuilder.CreatePlane("rightDoorGlass", { width: doorWidth / 2, height: doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+    const rightDoorGlass = BABYLON.MeshBuilder.CreatePlane("rightDoorGlass", { width: doorWidth / 2, height: doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, mallScene);
     rightDoorGlass.position = new BABYLON.Vector3((mx + drx) / 2, (dty + by) / 2, wz);
-    decorateGlass(rightDoorGlass, scene);
+    decorateGlass(rightDoorGlass, mallScene);
 	
     //Define a material
     var f = mirrorMaterial;
     f.backFaceCulling = false;
     f.twoSidedLighting = true;
     
-    const wallTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/wall.jpg",scene);
+    const wallTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/wall.jpg", mallScene);
     //const floorTexture = new BABYLON.Texture("resources/wooden_floor.jpg",scene);
     //floorTexture.uScale = floorTexture.vScale = 10;
     
-    var ba=new BABYLON.StandardMaterial("material1",scene);
+    var ba=new BABYLON.StandardMaterial("material1", mallScene);
     ba.diffuseTexture = wallTexture;
     ba.backFaceCulling = false;
     ba.twoSidedLighting = true;
     
-    var l=new BABYLON.StandardMaterial("material2",scene);
+    var l=new BABYLON.StandardMaterial("material2", mallScene);
     l.diffuseTexture = wallTexture;
     l.backFaceCulling = false;
     l.twoSidedLighting = true;
     
-    var r=new BABYLON.StandardMaterial("material3",scene);
+    var r=new BABYLON.StandardMaterial("material3", mallScene);
     r.diffuseTexture = wallTexture;
     r.backFaceCulling = false;
     r.twoSidedLighting = true;
     
-    var t=new BABYLON.StandardMaterial("material4",scene);
+    var t=new BABYLON.StandardMaterial("material4", mallScene);
     t.diffuseTexture = wallTexture;
     t.backFaceCulling = false;
     t.twoSidedLighting = true;
     t.specularPower = 500;
     t.specularColor = new BABYLON.Color3(1, 1, 1);
         
-    var bo=new BABYLON.StandardMaterial("material5",scene);
+    var bo=new BABYLON.StandardMaterial("material5", mallScene);
     bo.diffuseTexture = wallTexture;
     bo.backFaceCulling = false;
     bo.twoSidedLighting = true;
     
     //put into one
-    var multi=new BABYLON.MultiMaterial("nuggetman",scene);
+    var multi=new BABYLON.MultiMaterial("nuggetman", mallScene);
     multi.subMaterials.push(ba);
     multi.subMaterials.push(f);
     multi.subMaterials.push(l);
@@ -535,14 +535,14 @@ function createRoom(scene) {
 
     const lightOffset = 3;
 
-    const pointLight2 = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(mx - lightOffset, ty - 0.1, box.position.z + lightOffset), scene);
+    const pointLight2 = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(mx - lightOffset, ty - 0.1, box.position.z + lightOffset), mallScene);
     pointLight2.intensity = 0.2;
 
-    const pointLight4 = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(mx + lightOffset, ty - 0.1, box.position.z + lightOffset), scene);
+    const pointLight4 = new BABYLON.PointLight("pointLight", new BABYLON.Vector3(mx + lightOffset, ty - 0.1, box.position.z + lightOffset), mallScene);
     pointLight4.intensity = 0.2;
 }
 
-function decorateGlass(glass, scene) {
+function decorateGlass(glass) {
     glass.enableEdgesRendering();
     glass.edgesWidth = 5;
     glass.edgesColor = new BABYLON.Color4(0, 0, 0, 1);
@@ -561,12 +561,12 @@ function decorateGlass(glass, scene) {
     var reflector = BABYLON.Plane.FromPositionAndNormal(glass.position, glassNormal.scale(-1));
 
     //Create the mirror material
-    var mirrorMaterial = new BABYLON.StandardMaterial("mirror", scene);
-    mirrorMaterial.reflectionTexture = new BABYLON.MirrorTexture("mirror", 1024, scene, true);
+    var mirrorMaterial = new BABYLON.StandardMaterial("mirror", mallScene);
+    mirrorMaterial.reflectionTexture = new BABYLON.MirrorTexture("mirror", 1024, mallScene, true);
     (mirrorMaterial.reflectionTexture).mirrorPlane = reflector;
 
     // exclude the glass from the render list
-    let renderList = [...scene.meshes];
+    let renderList = [...mallScene.meshes];
     renderList.splice(renderList.indexOf(glass), 1);
     (mirrorMaterial.reflectionTexture).renderList = renderList;
 
@@ -578,20 +578,20 @@ function decorateGlass(glass, scene) {
     glass.material = mirrorMaterial;
 }
 
-function buildExitButton(position, scene) {
+function buildExitButton(position) {
     const highlightLayer = new BABYLON.HighlightLayer("hl1");
-    const box = BABYLON.MeshBuilder.CreateBox("exitButton", { width: 1.5, height: 0.6, depth: 0.02 }, scene);
+    const box = BABYLON.MeshBuilder.CreateBox("exitButton", { width: 1.5, height: 0.6, depth: 0.02 }, mallScene);
     box.rotation.y = Math.PI;
-    box.material = new BABYLON.StandardMaterial("exitButtonMaterial", scene);
-    (box.material).emissiveTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/exit_button.jpg", scene);
-    (box.material).diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/exit_button.jpg", scene);
+    box.material = new BABYLON.StandardMaterial("exitButtonMaterial", mallScene);
+    (box.material).emissiveTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/exit_button.jpg", mallScene);
+    (box.material).diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/exit_button.jpg", mallScene);
     //(box.material as StandardMaterial).emissiveTexture.level = 1;
     (box.material).specularPower = 0;
     (box.material).specularColor = new BABYLON.Color3(0, 0, 0);
     box.position = position;
 
     let isHovered = false;
-    box.actionManager = new BABYLON.ActionManager(scene);
+    box.actionManager = new BABYLON.ActionManager(mallScene);
     box.actionManager.registerAction(
         new BABYLON.ExecuteCodeAction(
             BABYLON.ActionManager.OnPointerOverTrigger,
@@ -612,7 +612,7 @@ function buildExitButton(position, scene) {
             function () {
                 if (isHovered) {
                     // Restore the original diffuse texture
-                    (box.material).diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/exit_button.jpg", scene);
+                    (box.material).diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/exit_button.jpg", mallScene);
                     isHovered = false;
                     highlightLayer.removeAllMeshes();
                 }
