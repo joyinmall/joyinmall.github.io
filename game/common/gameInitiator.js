@@ -169,7 +169,7 @@ function createGameRoom(games, scene) {
     // Set up initial camera properties
     camera.fov = 0.8;
     camera.minZ = 0.1;
-    const yPos = 1.8;
+    const yPos = 0.8;
 
     // Define variables for rotation tracking
     let horizontalAngle = 0;
@@ -240,8 +240,12 @@ function createGameRoom(games, scene) {
             const radius = 9;
             const butRadius = 8.46;
             const numberOfInstances = games.length;
-            const diffAngle = Math.PI / 10;
-            const center = new BABYLON.Vector3(0, 0, 0);
+            //const diffAngle = Math.PI / 10;
+            const diff = 10;
+            const diffStart = -diff / 2;
+            const diffStep = diff / (numberOfInstances - 1);
+            const machineY = -1;
+            //const center = new BABYLON.Vector3(0, 0, 0);
 
             // Assign a material
             const buttonMaterial = new BABYLON.StandardMaterial("buttonMaterial", scene);
@@ -249,11 +253,11 @@ function createGameRoom(games, scene) {
 
             for (let i = 0; i < numberOfInstances; i++) {
                 const iter = games[i];
-                const angle = diffAngle * i;
-                const x = radius * Math.cos(angle);
-                const z = radius * Math.sin(angle);
-                const bx = butRadius * Math.cos(angle);
-                const bz = butRadius * Math.sin(angle);
+                //const angle = diffAngle * i;
+                const x = diffStart + i * diffStep//radius * Math.cos(angle);
+                const z = radius;// * Math.sin(angle);
+                const bx = x;//butRadius * Math.cos(angle);
+                const bz = butRadius;// * Math.sin(angle);
 
                 let instance = null;
                 let button = null;
@@ -266,9 +270,9 @@ function createGameRoom(games, scene) {
                     button = originalButton.clone("button" + i);
                 }
 
-                button.position = new BABYLON.Vector3(bx, 1.14, bz);
-                button.lookAt(center);
-                button.rotationQuaternion = button.rotationQuaternion.multiply(BABYLON.Quaternion.FromEulerAngles(-Math.PI / 2, 0, 0));
+                button.position = new BABYLON.Vector3(bx, machineY + 1.14, bz);
+                //button.lookAt(center);
+                button.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(-Math.PI / 2, 0, Math.PI);//button.rotationQuaternion.multiply(BABYLON.Quaternion.FromEulerAngles(-Math.PI / 2, 0, 0));
 
                 button.actionManager = new BABYLON.ActionManager(scene);
 
@@ -289,11 +293,11 @@ function createGameRoom(games, scene) {
                     );
                 });
 
-                instance.position = new BABYLON.Vector3(x, 0, z);
-                instance.lookAt(center);
+                instance.position = new BABYLON.Vector3(x, machineY, z);
+                //instance.lookAt(center);
 
                 // Create and set a rotation quaternion with an additional rotation of PI / 2
-                instance.rotationQuaternion = instance.rotationQuaternion.multiply(BABYLON.Quaternion.FromEulerAngles(0, -Math.PI / 2, 0));
+                instance.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0, Math.PI / 2, 0);//instance.rotationQuaternion.multiply(BABYLON.Quaternion.FromEulerAngles(0, -Math.PI / 2, 0));
 
                 // Create a video texture
                 var videoTexture = new BABYLON.VideoTexture("video", "https://raw.githubusercontent.com/xMichal123/mall-games/main/" + iter + "/video.webm", currentActiveScene, true, false);
@@ -363,8 +367,8 @@ function createRoom() {
     faceColors[4] = new BABYLON.Color4(1,0,0,0.25);   // red top
     faceColors[1] = new BABYLON.Color4(0,1,0,0.25);   // green front
 
-    const maxRowWidth = 26;
-    const boxHeight = 5;
+    const maxRowWidth = 20;
+    const boxHeight = 3.5;
     const heightOffset = -1;
     const boxSize = maxRowWidth + 0.03;
 
@@ -392,7 +396,7 @@ function createRoom() {
 
 
     const doorWidth = 6;
-    const doorHeight = 4;
+    const doorHeight = 2.8;
 
     const lx = box.position.x - boxSize / 2;
     const dlx = box.position.x - doorWidth / 2;
