@@ -1,8 +1,3 @@
-// Load the library synchronously
-loadScriptSync("common/gameControlsManager.js");
-loadScriptSync("common/scoreManager.js");
-loadScriptSync("common/gameOverManager.js");
-loadScriptSync("common/slideGestureDetector.js");
 
 let onArc = false;
 
@@ -46,78 +41,6 @@ function loadScriptInIframe(url, dependencies = {}, params = {}, callback = null
     return iframe;
 }
 
-window.moreGamesCallback = null;
-window.gameScene = null;
-let currentActiveScene = null;
-
-window.canvas = document.getElementById("renderCanvas");
-
-var startRenderLoop = function (engine, canvas) {
-    engine.runRenderLoop(function () {
-        if (sceneToRender && sceneToRender.activeCamera) {
-            sceneToRender.render();
-        }
-    });
-}
-
-window.engine = null;
-var scene = null;
-var sceneToRender = null;
-//window.createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
-
-var createScene = function () {
-
-    /*
-     * FIRST SCENE
-     */
-    var firstScene = new BABYLON.Scene(window.engine);
-    firstScene.clearColor = new BABYLON.Color3(0.03, 0.03, 0.55);
-
-    scene = firstScene;
-
-    /*
-     * GUI SCENE
-     */
-    var guiScene = new BABYLON.Scene(window.engine);
-    // MARK THE GUI SCENE AUTO CLEAR AS FALSE SO IT DOESN'T ERASE
-    // THE CURRENTLY RENDERING SCENE
-    guiScene.autoClear = false;
-    var guiCamera = new BABYLON.FreeCamera("guiCamera", new BABYLON.Vector3(0,0,0), guiScene);
-
-    window.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, guiScene);
-	
-	// Skybox
-	var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, scene);
-	var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
-	skyboxMaterial.backFaceCulling = false;
-	skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/skybox2", scene);
-	skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-	skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-	skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-	skybox.material = skyboxMaterial;			
-
-    prepareGameRoom(firstScene);
-
-    currentActiveScene = firstScene;
-
-    //runRenderLoop inside a setTimeout is neccesary in the Playground
-    //to stop the PG's runRenderLoop.
-    setTimeout(function () {
-        window.engine.stopRenderLoop();
-
-        window.engine.runRenderLoop(function () {
-            currentActiveScene.render();
-            guiScene.render();
-        });
-    }, 500);
-
-    return firstScene;
-};
-
-function prepareGameRoom(scene) {
-    createGameRoom(window.games, scene);
-} 
-
 function startGame(gameName) {
     const BASE_URL = "https://cdn.jsdelivr.net/gh/xMichal123/mall-games@";
     const COMMIT_HASH = "latest"; // Update this if needed
@@ -157,7 +80,7 @@ function startGame(gameName) {
     scene.detachControl();
 }
 
-function createGameRoom(games, scene) {
+window.createGameRoom = (games, scene) => {
     // Define constants
     const radius = 6; // Radius of the circular path
     const verticalLimit = Math.PI / 8; // Limit for vertical rotation (in radians)
@@ -362,7 +285,7 @@ scene.onPointerObservable.add((pointerInfo) => {
     const light2 = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, -1, 0), scene);
     light2.intensity = 0.5;
 
-    createRoom();
+    createRoom(scene);
 
     BABYLON.SceneLoader.ImportMesh(
         "", // Empty if loading all meshes in the file
@@ -473,31 +396,6 @@ scene.onPointerObservable.add((pointerInfo) => {
     });
 }
 
-function cloneMeshWithChildren(originalMesh, newName, scene) {
-    // Clone the parent mesh (without children)
-    let clonedMesh = originalMesh.clone(newName);
-    
-    if (!clonedMesh) {
-        console.error("Cloning failed for mesh:", originalMesh.name);
-        return null;
-    }
-
-    // Remove automatically attached original children
-    clonedMesh.getChildren().forEach(child => {
-        child.setParent(null);  // Detach from the cloned mesh
-    });
-
-    // Recursively clone child meshes
-    originalMesh.getChildMeshes().forEach((child) => {
-        let clonedChild = child.clone(`${newName}_${child.name}`);
-        if (clonedChild) {
-            clonedChild.parent = clonedMesh; // Attach to cloned parent
-        }
-    });
-
-    return clonedMesh;
-}
-
 // Function to replace texture with video texture
 function replaceTexture(material, texture) {
     if (material instanceof BABYLON.PBRMaterial) {
@@ -507,7 +405,7 @@ function replaceTexture(material, texture) {
     }
 }
 
-function createRoom() {
+function createRoom(scene) {
         var faceColors = new Array(6);
 
     faceColors[4] = new BABYLON.Color4(1,0,0,0.25);   // red top
@@ -557,27 +455,27 @@ function createRoom() {
 
 
     //const exitButtonBuilder = new ExitButtonBuilder();
-    buildExitButton(new BABYLON.Vector3(mx, (ty + dty) / 2, wz + 0.01));
+    buildExitButton(new BABYLON.Vector3(mx, (ty + dty) / 2, wz + 0.01), scene);
 
     const leftGlass = BABYLON.MeshBuilder.CreatePlane("leftGlass", { width: boxSize / 2 - doorWidth / 2, height: boxHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
     leftGlass.position = new BABYLON.Vector3((lx + dlx) / 2, my, wz);
-    decorateGlass(leftGlass);
+    decorateGlass(leftGlass, scene);
 
     const rightGlass = BABYLON.MeshBuilder.CreatePlane("rightGlass", { width: boxSize / 2 - doorWidth / 2, height: boxHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
     rightGlass.position = new BABYLON.Vector3((rx + drx) / 2, my, wz);
-    decorateGlass(rightGlass);
+    decorateGlass(rightGlass, scene);
 
     const topGlass = BABYLON.MeshBuilder.CreatePlane("topGlass", { width: doorWidth, height: boxHeight - doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
     topGlass.position = new BABYLON.Vector3(mx, (ty + dty) / 2, wz);
-    decorateGlass(topGlass);
+    decorateGlass(topGlass, scene);
 
     const leftDoorGlass = BABYLON.MeshBuilder.CreatePlane("leftDoorGlass", { width: doorWidth / 2, height: doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
     leftDoorGlass.position = new BABYLON.Vector3((mx + dlx) / 2, (dty + by) / 2, wz);
-    decorateGlass(leftDoorGlass);
+    decorateGlass(leftDoorGlass, scene);
 
     const rightDoorGlass = BABYLON.MeshBuilder.CreatePlane("rightDoorGlass", { width: doorWidth / 2, height: doorHeight, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
     rightDoorGlass.position = new BABYLON.Vector3((mx + drx) / 2, (dty + by) / 2, wz);
-    decorateGlass(rightDoorGlass);
+    decorateGlass(rightDoorGlass, scene);
 	
     //Define a material
     var f = mirrorMaterial;
@@ -644,7 +542,7 @@ function createRoom() {
     pointLight4.intensity = 0.2;
 }
 
-function decorateGlass(glass) {
+function decorateGlass(glass, scene) {
     glass.enableEdgesRendering();
     glass.edgesWidth = 5;
     glass.edgesColor = new BABYLON.Color4(0, 0, 0, 1);
@@ -680,7 +578,7 @@ function decorateGlass(glass) {
     glass.material = mirrorMaterial;
 }
 
-function buildExitButton(position) {
+function buildExitButton(position, scene) {
     const highlightLayer = new BABYLON.HighlightLayer("hl1");
     const box = BABYLON.MeshBuilder.CreateBox("exitButton", { width: 1.5, height: 0.6, depth: 0.02 }, scene);
     box.rotation.y = Math.PI;
@@ -734,35 +632,4 @@ function buildExitButton(position) {
             }
         )
     );
-}
-
-window.initFunction = async function() {
-    /*var asyncEngineCreation = async function() {
-        try {
-        return createDefaultEngine();
-        } catch(e) {
-        console.log("the available createEngine function failed. Creating the default engine instead");
-        return createDefaultEngine();
-        }
-    }*/
-
-    window.engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false});//await asyncEngineCreation();
-
-    if (!window.engine) throw 'engine should not be null.';
-
-    startRenderLoop(window.engine, canvas);
-
-    window.scene = createScene();
-};
-
-// Resize
-window.addEventListener("resize", function () {
-    window.engine.resize();
-});
-
-window.createGameEnvironment = function (games, adCallback, useMoreGamesLink = true) {
-    window.games = games;
-    window.useMoreGamesLink = useMoreGamesLink;
-    gameOverManager.adCallback = adCallback;
-    initFunction().then(() => { sceneToRender = scene });
 }

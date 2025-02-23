@@ -1,0 +1,110 @@
+// Load the library synchronously
+loadScriptSync("common/gameControlsManager.js");
+loadScriptSync("common/scoreManager.js");
+loadScriptSync("common/gameOverManager.js");
+loadScriptSync("common/slideGestureDetector.js");
+loadScriptSync("mall/room.js");
+
+window.moreGamesCallback = null;
+window.gameScene = null;
+window.currentActiveScene = null;
+
+window.canvas = document.getElementById("renderCanvas");
+
+var startRenderLoop = function (engine, canvas) {
+    engine.runRenderLoop(function () {
+        if (sceneToRender && sceneToRender.activeCamera) {
+            sceneToRender.render();
+        }
+    });
+}
+
+window.engine = null;
+var scene = null;
+var sceneToRender = null;
+//window.createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+
+var createScene = function () {
+
+    /*
+     * FIRST SCENE
+     */
+    var firstScene = new BABYLON.Scene(window.engine);
+    firstScene.clearColor = new BABYLON.Color3(0.03, 0.03, 0.55);
+
+    scene = firstScene;
+
+    /*
+     * GUI SCENE
+     */
+    var guiScene = new BABYLON.Scene(window.engine);
+    // MARK THE GUI SCENE AUTO CLEAR AS FALSE SO IT DOESN'T ERASE
+    // THE CURRENTLY RENDERING SCENE
+    guiScene.autoClear = false;
+    var guiCamera = new BABYLON.FreeCamera("guiCamera", new BABYLON.Vector3(0,0,0), guiScene);
+
+    window.advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI", true, guiScene);
+	
+	// Skybox
+	var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, scene);
+	var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+	skyboxMaterial.backFaceCulling = false;
+	skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("https://raw.githubusercontent.com/xMichal123/mall-games/main/resources/skybox2", scene);
+	skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+	skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+	skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+	skybox.material = skyboxMaterial;			
+
+    prepareGameRoom(firstScene);
+
+    currentActiveScene = firstScene;
+
+    //runRenderLoop inside a setTimeout is neccesary in the Playground
+    //to stop the PG's runRenderLoop.
+    setTimeout(function () {
+        window.engine.stopRenderLoop();
+
+        window.engine.runRenderLoop(function () {
+            currentActiveScene.render();
+            guiScene.render();
+        });
+    }, 500);
+
+    return firstScene;
+};
+
+function prepareGameRoom(scene) {
+    createGameRoom(window.games, scene);
+} 
+
+
+window.initFunction = async function() {
+    /*var asyncEngineCreation = async function() {
+        try {
+        return createDefaultEngine();
+        } catch(e) {
+        console.log("the available createEngine function failed. Creating the default engine instead");
+        return createDefaultEngine();
+        }
+    }*/
+
+    window.engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false});//await asyncEngineCreation();
+
+    if (!window.engine) throw 'engine should not be null.';
+
+    startRenderLoop(window.engine, canvas);
+
+    window.scene = createScene();
+};
+
+// Resize
+window.addEventListener("resize", function () {
+    window.engine.resize();
+});
+
+window.createGameEnvironment = function (games, adCallback, useMoreGamesLink = true) {
+    window.games = games;
+    window.useMoreGamesLink = useMoreGamesLink;
+    gameOverManager.adCallback = adCallback;
+    initFunction().then(() => { sceneToRender = scene });
+}
