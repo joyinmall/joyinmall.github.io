@@ -4,6 +4,8 @@ loadScriptSync("common/scoreManager.js");
 loadScriptSync("common/gameOverManager.js");
 loadScriptSync("common/slideGestureDetector.js");
 
+let onArc = false;
+
 function removeIframe(iframe) {
     if (iframe && iframe.parentNode) {
         document.body.removeChild(iframe);
@@ -183,24 +185,168 @@ function createGameRoom(games, scene) {
     camera.setTarget(new BABYLON.Vector3(0, yPos, 0));
     camera.rotation.y = Math.PI + camera.rotation.y;
 
-    // Event listener for controlling rotation
-    scene.onPointerObservable.add((pointerInfo) => {
-        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-            scene.onPointerMove = (evt) => {
-                horizontalAngle += evt.movementX * 0.001;
-                verticalAngle = Math.max(-verticalLimit, Math.min(verticalLimit, verticalAngle + evt.movementY * 0.01));
-                
-                // Calculate camera position based on horizontal rotation
-                camera.position.x = radius * Math.cos(horizontalAngle);
-                camera.position.z = radius * Math.sin(horizontalAngle);
-                camera.position.y = yPos + verticalAngle; // Adjust vertical position based on vertical angle
+// Constants – adjust these to change the shape and behavior
+const RECT_WIDTH = 12;         // Overall width of the rounded rectangle
+const RECT_HEIGHT = 12;        // Overall height of the rounded rectangle
+const CORNER_RADIUS = 2;       // Radius of the rounded corners
 
-                // Always look towards the center of the circle
-                camera.setTarget(new BABYLON.Vector3(0, yPos, 0));
+const SENSITIVITY_HORIZONTAL = 0.02; // Adjusts how fast the camera moves along the path horizontally
+const SENSITIVITY_VERTICAL = 0.01;  // Adjusts vertical movement sensitivity
+const VERTICAL_LIMIT = 0.5;      // Limits for vertical movement (in world units)
+const Y_POS = 0.8;               // Base vertical position of the camera
+
+// Pre-compute half dimensions
+const halfW = RECT_WIDTH / 2;
+const halfH = RECT_HEIGHT / 2;
+
+// Compute lengths for each segment of the rounded rectangle perimeter:
+// Straight segments:
+const L_bottom = RECT_WIDTH - 2 * CORNER_RADIUS;
+const L_right  = RECT_HEIGHT - 2 * CORNER_RADIUS;
+const L_top    = RECT_WIDTH - 2 * CORNER_RADIUS;
+const L_left   = RECT_HEIGHT - 2 * CORNER_RADIUS;
+// Rounded corners (each a quarter-circle)
+const L_arc = (Math.PI / 2) * CORNER_RADIUS;
+// Total perimeter
+const TOTAL_PERIMETER = L_bottom + L_right + L_top + L_left + 4 * L_arc;
+
+// Given a distance 's' along the perimeter (which wraps around), this function returns the (x,z) position.
+function getPointOnRoundedRect(s) {
+    // Wrap s to the total perimeter length
+    s = ((s % TOTAL_PERIMETER) + TOTAL_PERIMETER) % TOTAL_PERIMETER;
+    
+    // Segment A: Bottom straight (from left to right)
+    if (s <= L_bottom) {
+        let t = s / L_bottom;
+        let x = (-halfW + CORNER_RADIUS) + t * (RECT_WIDTH - 2 * CORNER_RADIUS);
+        let z = -halfH;
+        onArc = false;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+    s -= L_bottom;
+    
+    // Segment B: Bottom-right arc (from 270° to 360°)
+    if (s <= L_arc) {
+        let t = s / L_arc;
+        let angle = (3 * Math.PI / 2) + t * (Math.PI / 2);
+        let cx = halfW - CORNER_RADIUS;
+        let cz = -halfH + CORNER_RADIUS;
+        let x = cx + CORNER_RADIUS * Math.cos(angle);
+        let z = cz + CORNER_RADIUS * Math.sin(angle);
+        onArc = true;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+    s -= L_arc;
+    
+    // Segment C: Right straight (from bottom to top)
+    if (s <= L_right) {
+        let t = s / L_right;
+        let z = (-halfH + CORNER_RADIUS) + t * (RECT_HEIGHT - 2 * CORNER_RADIUS);
+        let x = halfW;
+        onArc = false;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+    s -= L_right;
+    
+    // Segment D: Top-right arc (from 0° to 90°)
+    if (s <= L_arc) {
+        let t = s / L_arc;
+        let angle = 0 + t * (Math.PI / 2);
+        let cx = halfW - CORNER_RADIUS;
+        let cz = halfH - CORNER_RADIUS;
+        let x = cx + CORNER_RADIUS * Math.cos(angle);
+        let z = cz + CORNER_RADIUS * Math.sin(angle);
+        onArc = true;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+    s -= L_arc;
+    
+    // Segment E: Top straight (from right to left)
+    if (s <= L_top) {
+        let t = s / L_top;
+        let x = (halfW - CORNER_RADIUS) - t * (RECT_WIDTH - 2 * CORNER_RADIUS);
+        let z = halfH;
+        onArc = false;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+    s -= L_top;
+    
+    // Segment F: Top-left arc (from 90° to 180°)
+    if (s <= L_arc) {
+        let t = s / L_arc;
+        let angle = (Math.PI / 2) + t * (Math.PI / 2);
+        let cx = -halfW + CORNER_RADIUS;
+        let cz = halfH - CORNER_RADIUS;
+        let x = cx + CORNER_RADIUS * Math.cos(angle);
+        let z = cz + CORNER_RADIUS * Math.sin(angle);
+        onArc = true;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+    s -= L_arc;
+    
+    // Segment G: Left straight (from top to bottom)
+    if (s <= L_left) {
+        let t = s / L_left;
+        let z = (halfH - CORNER_RADIUS) - t * (RECT_HEIGHT - 2 * CORNER_RADIUS);
+        let x = -halfW;
+        onArc = false;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+    s -= L_left;
+    
+    // Segment H: Bottom-left arc (from 180° to 270°)
+    {
+        let t = s / L_arc;
+        let angle = Math.PI + t * (Math.PI / 2);
+        let cx = -halfW + CORNER_RADIUS;
+        let cz = -halfH + CORNER_RADIUS;
+        let x = cx + CORNER_RADIUS * Math.cos(angle);
+        let z = cz + CORNER_RADIUS * Math.sin(angle);
+        onArc = true;
+        return new BABYLON.Vector3(x, Y_POS, z);
+    }
+}
+
+// Variables to track movement along the path and vertical offset
+let pathDistance = 0;
+
+// Event listener for pointer interaction
+scene.onPointerObservable.add((pointerInfo) => {
+    if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+        scene.onPointerMove = (evt) => {
+            // Update horizontal path distance based on pointer movement
+            pathDistance += evt.movementX * SENSITIVITY_HORIZONTAL;
+            // Update vertical offset within limits
+            verticalAngle = Math.max(-VERTICAL_LIMIT, Math.min(VERTICAL_LIMIT, verticalAngle + evt.movementY * SENSITIVITY_VERTICAL));
+            
+            // Get new position on the rounded rectangle
+            let newPos = getPointOnRoundedRect(pathDistance);
+            camera.position.x = newPos.x;
+            camera.position.z = newPos.z;
+            camera.position.y = Y_POS + verticalAngle;
+            
+            if (onArc) {
+                // Keep the camera focused at the center (adjust if needed)
+                camera.setTarget(new BABYLON.Vector3(Math.sign(camera.position.x) * (halfW - CORNER_RADIUS), Y_POS, Math.sign(camera.position.z) * (halfH - CORNER_RADIUS)));
                 camera.rotation.y = Math.PI + camera.rotation.y;
-            };
-        }
-    });
+            } else {
+                const epsilon = 0.01;
+
+                if (Math.abs(camera.position.x - halfW) < epsilon) {
+                    camera.rotation.y = Math.PI / 2;
+                } else if (Math.abs(camera.position.x + halfW) < epsilon) {
+                    camera.rotation.y = -Math.PI / 2;
+                } else if (Math.abs(camera.position.z - halfH) < epsilon) {
+                    camera.rotation.y = 0 * Math.PI
+                } else if (Math.abs(camera.position.z + halfH) < epsilon) {
+                    camera.rotation.y = Math.PI;
+                }
+            }
+
+            camera.rotation.x = 0.1 * verticalAngle * Math.PI;
+        };
+    }
+});
 
     scene.onPointerUp = () => {
         scene.onPointerMove = null;
@@ -241,7 +387,7 @@ function createGameRoom(games, scene) {
             const butRadius = 8.46;
             const numberOfInstances = games.length;
             //const diffAngle = Math.PI / 10;
-            const diff = 10;
+            const diff = 7;
             const diffStart = -diff / 2;
             const diffStep = diff / (numberOfInstances - 1);
             const machineY = -1;
@@ -395,7 +541,7 @@ function createRoom() {
     mirrorMaterial.alpha = 0.1;
 
 
-    const doorWidth = 6;
+    const doorWidth = 4;
     const doorHeight = 2.8;
 
     const lx = box.position.x - boxSize / 2;
