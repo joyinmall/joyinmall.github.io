@@ -5,6 +5,7 @@ loadScriptSync("common/gameOverManager.js");
 loadScriptSync("common/slideGestureDetector.js");
 loadScriptSync("mall/room.js");
 loadScriptSync("mall/ads/TvAd.js");
+loadScriptSync("mall/ads/TaddtoyAd.js");
 loadScriptSync("mall/adsManager.js");
 
 window.moreGamesCallback = null;

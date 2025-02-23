@@ -369,7 +369,7 @@ mallScene.onPointerUp = () => {
                 instance.rotationQuaternion = BABYLON.Quaternion.FromEulerAngles(0, Math.PI / 2, 0);//instance.rotationQuaternion.multiply(BABYLON.Quaternion.FromEulerAngles(0, -Math.PI / 2, 0));
 
                 // Create a video texture
-                var videoTexture = new BABYLON.VideoTexture("video", "https://raw.githubusercontent.com/xMichal123/mall-games/main/" + iter + "/video.webm", currentActiveScene, true, false);
+                var videoTexture = new BABYLON.VideoTexture("video", "https://raw.githubusercontent.com/xMichal123/mall-games/main/" + iter + "/video.webm", currentActiveScene, true, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, { muted: true });
                 videoTexture.uScale = 2.95;
                 videoTexture.vScale = 3.2;
 

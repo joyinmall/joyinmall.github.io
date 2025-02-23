@@ -4,17 +4,12 @@ class TvAd {
         let boxMat = new BABYLON.StandardMaterial("boxMat", mallScene);
         boxMat.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.1);
 
-        /*var box = BABYLON.MeshBuilder.CreateBox("tv", {width: 1, height: 1, depth: 1 }, mallScene);
-        box.position = new BABYLON.Vector3(-9, 0, 9);
-        box.material = boxMat;*/
-
-        
         var box = BABYLON.MeshBuilder.CreateBox("tv", {width: 3.8, height: 2.9, depth: 0.1 }, mallScene);
         box.material = boxMat;
         box.position.x = -roomEdgeLength / 2 + 0.01 - 0.06;
         box.position.y = 1;
         box.rotation = new BABYLON.Vector3(0, -Math.PI / 2, 0);
-        //box.position.z = 0.06;
+
         // Create a plane mesh
         var plane = BABYLON.MeshBuilder.CreatePlane("plane", { width: 3.6, height: 2.7 }, mallScene);
         plane.position.x = -roomEdgeLength / 2 + 0.01;
@@ -25,7 +20,7 @@ class TvAd {
         var videoMat = new BABYLON.StandardMaterial("videoMat", mallScene);
         
         // Create a video texture. Replace 'path/to/video.mp4' with your video file's URL.
-        var videoTexture = new BABYLON.VideoTexture("video", folder + 'video.mp4', mallScene, false, false);
+        var videoTexture = new BABYLON.VideoTexture("video", folder + 'video.mp4', mallScene, false, false, BABYLON.Texture.TRILINEAR_SAMPLINGMODE, { muted: true });
         
         // Optionally, set properties on the video element (e.g., looping)
         videoTexture.video.loop = true;
