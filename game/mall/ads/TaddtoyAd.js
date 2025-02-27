@@ -54,10 +54,12 @@ class TaddtoyAd {
     
         newMeshHolePlate.position.x = roomEdgeLength / 2 - 0.1;
         newMeshHolePlate.position.y = 1;
+        newMeshHolePlate.position.z = 2;
         newMeshHolePlate.rotation = new BABYLON.Vector3(-Math.PI / 2, 0, Math.PI / 2);
         //box.position.z = 0.06;
         plane.position.x = roomEdgeLength / 2 - 0.1 - 0.07;
         plane.position.y = 1.00;
+        plane.position.z = 2;
         plane.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0);
 
         // Define an array of video URLs (one for each video index).
@@ -105,6 +107,7 @@ class TaddtoyAd {
         var banner = BABYLON.MeshBuilder.CreatePlane("plane", { width: 3.64, height: 0.76 }, mallScene);
         banner.position.x = roomEdgeLength / 2 - 0.01;
         banner.position.y = -0.2;
+        banner.position.z = 2;
         banner.rotation = new BABYLON.Vector3(0, Math.PI / 2, 0);
 
         let bannerMat = new BABYLON.StandardMaterial("boxMat", mallScene);

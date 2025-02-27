@@ -1,5 +1,39 @@
+// Constants – adjust these to change the shape and behavior
+let RECT_WIDTH = 12;         // Overall width of the rounded rectangle
+let RECT_HEIGHT = 12;        // Overall height of the rounded rectangle
+const CORNER_RADIUS = 2;       // Radius of the rounded corners
+
+const SENSITIVITY_HORIZONTAL = 0.02; // Adjusts how fast the camera moves along the path horizontally
+const SENSITIVITY_VERTICAL = 0.01;  // Adjusts vertical movement sensitivity
+const VERTICAL_LIMIT = 0.5;      // Limits for vertical movement (in world units)
+const Y_POS = 0.8;               // Base vertical position of the camera
+
+// Pre-compute half dimensions
+const halfW = RECT_WIDTH / 2;
+const halfH = RECT_HEIGHT / 2;
+
+// Compute lengths for each segment of the rounded rectangle perimeter:
+// Straight segments:
+const L_bottom = RECT_WIDTH - 2 * CORNER_RADIUS;
+const L_right  = RECT_HEIGHT - 2 * CORNER_RADIUS;
+const L_top    = RECT_WIDTH - 2 * CORNER_RADIUS;
+const L_left   = RECT_HEIGHT - 2 * CORNER_RADIUS;
+// Rounded corners (each a quarter-circle)
+const L_arc = (Math.PI / 2) * CORNER_RADIUS;
+// Total perimeter
+const TOTAL_PERIMETER = L_bottom + L_right + L_top + L_left + 4 * L_arc;
 
 let onArc = false;
+
+let introMode = true;
+
+// Define variables for rotation tracking
+let verticalAngle = 0;
+
+// Variables to track movement along the path and vertical offset
+let pathDistance = L_bottom + L_right + L_top / 2 + 2 * L_arc;
+
+let camera = null;
 
 function removeIframe(iframe) {
     if (iframe && iframe.parentNode) {
@@ -79,59 +113,6 @@ function startGame(gameName) {
     currentActiveScene = iframe.contentWindow.gameScene;
     mallScene.detachControl();
 }
-
-window.createGameRoom = (games) => {
-    // Define constants
-    const radius = 6; // Radius of the circular path
-    const verticalLimit = Math.PI / 8; // Limit for vertical rotation (in radians)
-
-    // Create a camera that will simulate the player's view
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(radius, 2, 0), mallScene);
-
-    // Detach default camera controls
-    camera.detachControl(canvas);
-
-    // Set up initial camera properties
-    camera.fov = 0.8;
-    camera.minZ = 0.1;
-    const yPos = 0.8;
-
-    // Define variables for rotation tracking
-    let horizontalAngle = 0;
-    let verticalAngle = 0;
-
-    camera.position.x = radius * Math.cos(horizontalAngle);
-    camera.position.z = radius * Math.sin(horizontalAngle);
-    camera.position.y = yPos + verticalAngle; // Adjust vertical position based on vertical angle
-
-    // Always look towards the center of the circle
-    camera.setTarget(new BABYLON.Vector3(0, yPos, 0));
-    camera.rotation.y = Math.PI + camera.rotation.y;
-
-// Constants – adjust these to change the shape and behavior
-let RECT_WIDTH = 12;         // Overall width of the rounded rectangle
-let RECT_HEIGHT = 12;        // Overall height of the rounded rectangle
-const CORNER_RADIUS = 2;       // Radius of the rounded corners
-
-const SENSITIVITY_HORIZONTAL = 0.02; // Adjusts how fast the camera moves along the path horizontally
-const SENSITIVITY_VERTICAL = 0.01;  // Adjusts vertical movement sensitivity
-const VERTICAL_LIMIT = 0.5;      // Limits for vertical movement (in world units)
-const Y_POS = 0.8;               // Base vertical position of the camera
-
-// Pre-compute half dimensions
-const halfW = RECT_WIDTH / 2;
-const halfH = RECT_HEIGHT / 2;
-
-// Compute lengths for each segment of the rounded rectangle perimeter:
-// Straight segments:
-const L_bottom = RECT_WIDTH - 2 * CORNER_RADIUS;
-const L_right  = RECT_HEIGHT - 2 * CORNER_RADIUS;
-const L_top    = RECT_WIDTH - 2 * CORNER_RADIUS;
-const L_left   = RECT_HEIGHT - 2 * CORNER_RADIUS;
-// Rounded corners (each a quarter-circle)
-const L_arc = (Math.PI / 2) * CORNER_RADIUS;
-// Total perimeter
-const TOTAL_PERIMETER = L_bottom + L_right + L_top + L_left + 4 * L_arc;
 
 // Given a distance 's' along the perimeter (which wraps around), this function returns the (x,z) position.
 function getPointOnRoundedRect(s) {
@@ -230,55 +211,25 @@ function getPointOnRoundedRect(s) {
     }
 }
 
-// Variables to track movement along the path and vertical offset
-let pathDistance = 0;
+window.createGameRoom = (games) => {
+     // Create a camera that will simulate the player's view
+    camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0,0,0), mallScene);
 
-// Event listener for pointer interaction
-mallScene.onPointerObservable.add((pointerInfo) => {
-    if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
-        mallScene.onPointerMove = (evt) => {
-            // Update horizontal path distance based on pointer movement
-            pathDistance += evt.movementX * SENSITIVITY_HORIZONTAL;
-            // Update vertical offset within limits
-            verticalAngle = Math.max(-VERTICAL_LIMIT, Math.min(VERTICAL_LIMIT, verticalAngle + evt.movementY * SENSITIVITY_VERTICAL));
-            
-            // Get new position on the rounded rectangle
-            let newPos = getPointOnRoundedRect(pathDistance);
-            camera.position.x = newPos.x;
-            camera.position.z = newPos.z;
-            camera.position.y = Y_POS + verticalAngle;
-            
-            if (onArc) {
-                // Keep the camera focused at the center (adjust if needed)
-                camera.setTarget(new BABYLON.Vector3(Math.sign(camera.position.x) * (halfW - CORNER_RADIUS), Y_POS, Math.sign(camera.position.z) * (halfH - CORNER_RADIUS)));
-                camera.rotation.y = Math.PI + camera.rotation.y;
-            } else {
-                const epsilon = 0.01;
+    // Detach default camera controls
+    camera.detachControl(canvas);
 
-                if (Math.abs(camera.position.x - halfW) < epsilon) {
-                    camera.rotation.y = Math.PI / 2;
-                } else if (Math.abs(camera.position.x + halfW) < epsilon) {
-                    camera.rotation.y = -Math.PI / 2;
-                } else if (Math.abs(camera.position.z - halfH) < epsilon) {
-                    camera.rotation.y = 0 * Math.PI
-                } else if (Math.abs(camera.position.z + halfH) < epsilon) {
-                    camera.rotation.y = Math.PI;
-                }
-            }
+    // Set up initial camera properties
+    camera.fov = 0.8;
+    camera.minZ = 0.1;
 
-            camera.rotation.x = 0.1 * verticalAngle * Math.PI;
-        };
-    }
-});
+    camera.position.x = 0;
+    camera.position.z = -10;
+    camera.position.y = Y_POS + verticalAngle; // Adjust vertical position based on vertical angle
 
-mallScene.onPointerUp = () => {
-    mallScene.onPointerMove = null;
-    };
+    // Always look towards the center of the circle
+    camera.setTarget(new BABYLON.Vector3(0, Y_POS, 0));
 
     // Light setup
-    /*var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), mallScene);
-    light.intensity = 0.7;*/
-
     const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), mallScene);
     light.intensity = 0.5;
 
@@ -387,6 +338,45 @@ mallScene.onPointerUp = () => {
                         }
                     }
                 });
+            }
+
+            mallScene.onPointerDown = () => {
+                if (introMode) {
+                    introMode = false;
+
+                    let animation = new BABYLON.Animation(
+                        "cameraMove",
+                        "position.z",
+                        30, // FPS (higher is smoother)
+                        BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                    );
+                    
+                    // Define the animation keys
+                    let startZ = camera.position.z;
+                    let endZ = halfH;
+                    let keys = [
+                        { frame: 0, value: startZ },
+                        { frame: 30, value: endZ } // Moves in 30 frames (~1 sec at 30 FPS)
+                    ];
+                    animation.setKeys(keys);
+
+                    const easing = new BABYLON.QuadraticEase();
+                    easing.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+                
+                    animation.setEasingFunction(easing);
+                                    
+                    // Apply the animation to the camera
+                    camera.animations = [animation];
+                    
+                    // Function to call when animation is done
+                    let onAnimationEnd = function () {
+                        registerEvents();
+                    };
+                    
+                    // Start the animation and call the event when done
+                    mallScene.beginDirectAnimation(camera, [animation], 0, 30, false, 1, onAnimationEnd);
+                }
             }
         }, null, function (scene, message) {
             console.error(message); // Log any loading errors
@@ -632,4 +622,48 @@ function buildExitButton(position) {
             }
         )
     );
+}
+
+function registerEvents() {
+    // Event listener for pointer interaction
+    mallScene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN) {
+            mallScene.onPointerMove = (evt) => {
+                // Update horizontal path distance based on pointer movement
+                pathDistance += evt.movementX * SENSITIVITY_HORIZONTAL;
+                // Update vertical offset within limits
+                verticalAngle = Math.max(-VERTICAL_LIMIT, Math.min(VERTICAL_LIMIT, verticalAngle + evt.movementY * SENSITIVITY_VERTICAL));
+                
+                // Get new position on the rounded rectangle
+                let newPos = getPointOnRoundedRect(pathDistance);
+                camera.position.x = newPos.x;
+                camera.position.z = newPos.z;
+                camera.position.y = Y_POS + verticalAngle;
+                
+                if (onArc) {
+                    // Keep the camera focused at the center (adjust if needed)
+                    camera.setTarget(new BABYLON.Vector3(Math.sign(camera.position.x) * (halfW - CORNER_RADIUS), Y_POS, Math.sign(camera.position.z) * (halfH - CORNER_RADIUS)));
+                    camera.rotation.y = Math.PI + camera.rotation.y;
+                } else {
+                    const epsilon = 0.01;
+
+                    if (Math.abs(camera.position.x - halfW) < epsilon) {
+                        camera.rotation.y = Math.PI / 2;
+                    } else if (Math.abs(camera.position.x + halfW) < epsilon) {
+                        camera.rotation.y = -Math.PI / 2;
+                    } else if (Math.abs(camera.position.z - halfH) < epsilon) {
+                        camera.rotation.y = 0 * Math.PI
+                    } else if (Math.abs(camera.position.z + halfH) < epsilon) {
+                        camera.rotation.y = Math.PI;
+                    }
+                }
+
+                camera.rotation.x = 0.1 * verticalAngle * Math.PI;
+            };
+        }
+    });
+
+    mallScene.onPointerUp = () => {
+        mallScene.onPointerMove = null;
+    };    
 }

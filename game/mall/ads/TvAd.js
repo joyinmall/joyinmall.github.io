@@ -8,12 +8,14 @@ class TvAd {
         box.material = boxMat;
         box.position.x = -roomEdgeLength / 2 + 0.01 - 0.06;
         box.position.y = 1;
+        box.position.z = 2;
         box.rotation = new BABYLON.Vector3(0, -Math.PI / 2, 0);
 
         // Create a plane mesh
         var plane = BABYLON.MeshBuilder.CreatePlane("plane", { width: 3.6, height: 2.7 }, mallScene);
         plane.position.x = -roomEdgeLength / 2 + 0.01;
         plane.position.y = 1;
+        plane.position.z = 2;
         plane.rotation = new BABYLON.Vector3(0, -Math.PI / 2, 0);
 
         // Create a standard material for the plane
@@ -34,6 +36,7 @@ class TvAd {
         var banner = BABYLON.MeshBuilder.CreatePlane("plane", { width: 3.64, height: 0.45 }, mallScene);
         banner.position.x = -roomEdgeLength / 2 + 0.01;
         banner.position.y = -0.7;
+        banner.position.z = 2;
         banner.rotation = new BABYLON.Vector3(0, -Math.PI / 2, 0);
 
         let bannerMat = new BABYLON.StandardMaterial("boxMat", mallScene);
