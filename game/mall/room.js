@@ -3,7 +3,7 @@ let RECT_WIDTH = 12;         // Overall width of the rounded rectangle
 let RECT_HEIGHT = 12;        // Overall height of the rounded rectangle
 const CORNER_RADIUS = 2;       // Radius of the rounded corners
 
-const SENSITIVITY_HORIZONTAL = 0.02; // Adjusts how fast the camera moves along the path horizontally
+const SENSITIVITY_HORIZONTAL = 0.01; // Adjusts how fast the camera moves along the path horizontally
 const SENSITIVITY_VERTICAL = 0.01;  // Adjusts vertical movement sensitivity
 const VERTICAL_LIMIT = 0.5;      // Limits for vertical movement (in world units)
 const Y_POS = 0.8;               // Base vertical position of the camera
