@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://cdn.babylonjs.com/recast.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/addons/babylonjs.addons.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+        
+        <script type="text/javascript">
+            window.SDK_OPTIONS = {
+               gameId: "8kcwewanuqcxywpfrv0taamsp61qdncf",
+               onEvent: function (a) {
+                  switch (a.name) {
+                     case "SDK_GAME_PAUSE":
+                        // pause game logic / mute audio
+                        break;
+                     case "SDK_GAME_START":
+                        // advertisement done, resume game logic and unmute audio
+                        break;
+                     case "SDK_READY":
+                        // when sdk is ready
+                        break;
+                  }
+               }
+            };
+         (function (a, b, c) {
+            var d = a.getElementsByTagName(b)[0];
+            a.getElementById(c) || (a = a.createElement(b), a.id = c, a.src = "https://api.gamemonetize.com/sdk.js", d.parentNode.insertBefore(a, d))
+         })(document, "script", "gamemonetize-sdk"); 
+         </script>
+         
+        <style>
+            html,
+            body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+
+            #canvasZone {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+        <script type="module">
+
+function loadScriptSync(url) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false); // `false` makes it synchronous
+    xhr.send();
+
+    if (xhr.status === 200) {
+        const scriptContent = xhr.responseText;
+        eval(scriptContent); // Evaluate the script immediately
+    } else {
+        throw new Error(`Failed to load script: ${url}`);
+    }
+}
+
+window.integrationSite = 'gamemonetize.com';
+
+loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/mall/root.js");
+
+const MIN_AD_DELAY_MS = 5 * 60 * 1000; // 30 seconds minimum delay
+let lastAdTime = 0;
+
+const requestAdWithCooldown = () => {
+    const now = Date.now();
+    if (now - lastAdTime >= MIN_AD_DELAY_MS) {
+        lastAdTime = now;
+        try {
+            if (typeof sdk !== 'undefined' && sdk.showBanner !== 'undefined') {
+                sdk.showBanner();
+            }
+        } catch (error) {
+            console.error("Script execution error:", error);
+        }
+    } else {
+        //console.log(`Ad request blocked. Try again in ${(MIN_AD_DELAY_MS - (now - lastAdTime)) / 1000} seconds.`);
+    }
+};
+
+const callbacks = {
+  adFinished: () => {},//console.log("End midgame ad"),
+  adError: (error) => console.log("Error midgame ad", error),
+  adStarted: () => {}//console.log("Start midgame ad"),
+};
+
+createGameEnvironment(["train-dispatcher"], () => requestAdWithCooldown());
+
+        </script>
+    </body>
+</html>

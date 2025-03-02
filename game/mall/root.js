@@ -1,13 +1,24 @@
-// Load the library synchronously
-loadScriptSync("common/gameControlsManager.js");
-loadScriptSync("common/scoreManager.js");
-loadScriptSync("common/gameOverManager.js");
-loadScriptSync("common/slideGestureDetector.js");
-loadScriptSync("mall/room.js");
-loadScriptSync("mall/ads/TvAd.js");
-loadScriptSync("mall/ads/TaddtoyAd.js");
-loadScriptSync("mall/ads/Banner.js");
-loadScriptSync("mall/adsManager.js");
+if (window.integrationSite) {
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/common/gameControlsManager.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/common/scoreManager.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/common/gameOverManager.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/common/slideGestureDetector.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/mall/room.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/mall/ads/TvAd.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/mall/ads/TaddtoyAd.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/mall/ads/Banner.js");
+    loadScriptSync("https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@main/game/mall/adsManager.js");
+} else {
+    loadScriptSync("common/gameControlsManager.js");
+    loadScriptSync("common/scoreManager.js");
+    loadScriptSync("common/gameOverManager.js");
+    loadScriptSync("common/slideGestureDetector.js");
+    loadScriptSync("mall/room.js");
+    loadScriptSync("mall/ads/TvAd.js");
+    loadScriptSync("mall/ads/TaddtoyAd.js");
+    loadScriptSync("mall/ads/Banner.js");
+    loadScriptSync("mall/adsManager.js");
+}
 
 window.moreGamesCallback = null;
 window.gameScene = null;
