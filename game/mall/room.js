@@ -262,8 +262,8 @@ window.createGameRoom = (games) => {
             const numberOfInstances = games.length;
             //const diffAngle = Math.PI / 10;
             const diff = 7;
-            const diffStart = -diff / 2;
-            const diffStep = diff / (numberOfInstances - 1);
+            const diffStart = numberOfInstances > 1 ? -diff / 2 : 0;
+            const diffStep = numberOfInstances > 1 ? diff / (numberOfInstances - 1) : 0;
             const machineY = -1;
             //const center = new BABYLON.Vector3(0, 0, 0);
 
