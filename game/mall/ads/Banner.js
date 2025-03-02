@@ -8,7 +8,7 @@ class Banner {
         banner.rotation = new BABYLON.Vector3(0, (left ? -1 : 1) * Math.PI / 2, 0);
 
         let bannerMat = new BABYLON.StandardMaterial("boxMat", mallScene);
-        bannerMat.diffuseTexture = new BABYLON.Texture(folder + 'banner.webp', mallScene);
+        bannerMat.diffuseTexture = new BABYLON.Texture(linkRes(folder + 'banner.webp'), mallScene);
         bannerMat.diffuseTexture.hasAlpha = true;
         banner.material = bannerMat;
 
