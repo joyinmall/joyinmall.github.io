@@ -77,7 +77,7 @@ function loadScriptInIframe(url, dependencies = {}, params = {}, callback = null
 
 function startGame(gameName) {
     const BASE_URL = "https://cdn.jsdelivr.net/gh/xMichal123/mall-games@";
-    const COMMIT_HASH = "03be3f6"; // Update this if needed
+    const COMMIT_HASH = "8dcfba6"; // Update this if needed
 
     const scriptUrl = `${BASE_URL}${COMMIT_HASH}/${gameName}/game.js`;
     
@@ -303,12 +303,40 @@ window.createGameRoom = (games) => {
                     }
                 ));
 
+                // Pointer over action to change the cursor to a pointer (hand)
+                button.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                        document.body.style.cursor = "pointer";
+                    })
+                );
+                
+                // Pointer out action to change the cursor back to default
+                button.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
+                        document.body.style.cursor = "default";
+                    })
+                );
+
                 button.getChildMeshes().forEach((child) => {
                     child.isPickable = true;
                     child.actionManager = new BABYLON.ActionManager(mallScene);
                     child.actionManager.registerAction(
                         new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, () => {
                             startGame(iter);
+                        })
+                    );
+
+                    // Pointer over action to change the cursor to a pointer (hand)
+                    child.actionManager.registerAction(
+                        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOverTrigger, () => {
+                            document.body.style.cursor = "pointer";
+                        })
+                    );
+                    
+                    // Pointer out action to change the cursor back to default
+                    child.actionManager.registerAction(
+                        new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPointerOutTrigger, () => {
+                            document.body.style.cursor = "default";
                         })
                     );
                 });

@@ -23,19 +23,19 @@ class GameControlsManager {
         this.pauseButton.isVivible = false;
         advancedTexture.addControl(this.pauseButton);
 
-        // Add a background rectangle
-        this.background = new BABYLON.GUI.Rectangle();
-        this.background.width = "500px";
-        this.background.height = "300px";
-        this.background.color = "white";
-        this.background.thickness = 2;
-        this.background.background = "rgba(0, 0, 0, 0.7)";
-        this.background.cornerRadius = 20;
-        this.background.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this.background.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        this.background.isVisible = false;
-        this.background.zIndex = 1000;
-        advancedTexture.addControl(this.background);
+        // Add a controlDialog rectangle
+        this.controlDialog = new BABYLON.GUI.Rectangle();
+        this.controlDialog.width = "500px";
+        this.controlDialog.height = "300px";
+        this.controlDialog.color = "white";
+        this.controlDialog.thickness = 2;
+        this.controlDialog.background = "rgba(0, 0, 0, 0.7)";
+        this.controlDialog.cornerRadius = 20;
+        this.controlDialog.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this.controlDialog.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+        this.controlDialog.isVisible = false;
+        this.controlDialog.zIndex = 1000;
+        advancedTexture.addControl(this.controlDialog);
 
         // StackPanel for layout
         this.panel = new BABYLON.GUI.StackPanel();
@@ -43,7 +43,7 @@ class GameControlsManager {
         this.panel.isVertical = true;
         this.panel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
         this.panel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-        this.background.addControl(this.panel);
+        this.controlDialog.addControl(this.panel);
 
         // Game paused text
         this.gameOverText = new BABYLON.GUI.TextBlock();
@@ -87,7 +87,7 @@ class GameControlsManager {
 
     hide() {
         this.introImage.isVisible = false;
-        this.background.isVisible = false;
+        this.controlDialog.isVisible = false;
     }
 
     addButtons(row) {
@@ -98,7 +98,7 @@ class GameControlsManager {
         this.grid.addControl(this.restartButton, row, 1);
     }
 
-    init(imgUrl, startCallback = () => { if (gameManager) { gameManager.start(true); } }, restartCallback = () => { gameManager.restart(); }, pauseCallback = () => {}, resumeCallback = () => {}) {
+    init(imgUrl, startCallback = () => { if (gameManager) { gameManager.start(true); return true; } else { return false; } }, restartCallback = () => { gameManager.restart(); }, pauseCallback = () => {}, resumeCallback = () => {}) {
         this._paused = 0;
         
         if (this.introImage) {
@@ -141,7 +141,7 @@ class GameControlsManager {
 
         this.pauseButton.onPointerClickObservable.clear();
         this.pauseButton.onPointerClickObservable.add(() => {
-            this.background.isVisible = true;
+            this.controlDialog.isVisible = true;
             this.introImage.isVisible = true;
             
             if (this.pauseCallback) {
@@ -171,15 +171,15 @@ class GameControlsManager {
         this.introImage.isPointerBlocker = true;
 
         this.introImage.onPointerClickObservable.add(() => {
-            this.hide();
             this.pauseButton.isVisible = true;
 
-            if (this.background && this.background.isVisible) {
+            if (this.controlDialog && this.controlDialog.isVisible) {
+                this.hide();
                 if (resumeCallback) {
                     resumeCallback();
                 }
-            } else if (startCallback) {
-                startCallback();
+            } else if (!startCallback || startCallback()) {
+                this.hide();
             }
         });
 
