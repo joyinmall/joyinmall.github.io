@@ -98,7 +98,7 @@ class GameControlsManager {
         this.grid.addControl(this.restartButton, row, 1);
     }
 
-    init(imgUrl, startCallback = () => { gameManager.start(true); }, restartCallback = () => { gameManager.restart(); }, pauseCallback = () => {}, resumeCallback = () => {}) {
+    init(imgUrl, startCallback = () => { if (gameManager) { gameManager.start(true); } }, restartCallback = () => { gameManager.restart(); }, pauseCallback = () => {}, resumeCallback = () => {}) {
         this._paused = 0;
         
         if (this.introImage) {
