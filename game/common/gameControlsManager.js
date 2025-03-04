@@ -93,6 +93,7 @@ class GameControlsManager {
     hide() {
         this.introImage.isVisible = false;
         this.controlDialog.isVisible = false;
+        let test = 'test';  // TODO remove
         document.body.style.cursor = "default";// default cursor
     }
 
