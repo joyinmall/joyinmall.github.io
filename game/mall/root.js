@@ -122,5 +122,6 @@ window.createGameEnvironment = function (games, adCallback, useMoreGamesLink = t
     window.games = games;
     window.useMoreGamesLink = useMoreGamesLink;
     gameOverManager.adCallback = adCallback;
+    gameControlsManager.adCallback = adCallback;
     initFunction().then(() => { sceneToRender = window.mallScene });
 }

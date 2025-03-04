@@ -3,10 +3,15 @@ class GameControlsManager {
         this.introImage = null;
         this.pauseButton = null;
         this._paused = 0;
+        this._adCallback = null;
     }
 
     get paused() {
         return this._paused > 0;
+    }
+    
+    set adCallback(adCallback) {
+        this._adCallback = adCallback;
     }
     
     initialize() {
@@ -178,6 +183,10 @@ class GameControlsManager {
                 if (resumeCallback) {
                     resumeCallback();
                 }
+
+            } else if (this._adCallback) {
+                this._adCallback();
+                this._adCallback = null;
             } else if (!startCallback || startCallback()) {
                 this.hide();
             }
