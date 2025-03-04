@@ -77,7 +77,7 @@ function loadScriptInIframe(url, dependencies = {}, params = {}, callback = null
 
 function startGame(gameName) {
     const BASE_URL = "https://cdn.jsdelivr.net/gh/xMichal123/mall-games@";
-    const COMMIT_HASH = "8dcfba6"; // Update this if needed
+    const COMMIT_HASH = "f9df8f9"; // Update this if needed
 
     const scriptUrl = `${BASE_URL}${COMMIT_HASH}/${gameName}/game.js`;
     

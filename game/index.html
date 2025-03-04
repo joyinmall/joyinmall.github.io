@@ -71,7 +71,7 @@ function loadScriptSync(url) {
 loadScriptSync("mall/root.js");
 
 createGameEnvironment([ "train-dispatcher", "swordsmen-algebra", "flappy-bird" ],
-    () => {  },
+    null/*() => { alert('ad') }*/,  // TODO: not working at all
     false
 );
 

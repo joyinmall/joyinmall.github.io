@@ -186,7 +186,7 @@ class GameControlsManager {
 
             } else if (this._adCallback) {
                 this._adCallback();
-                this._adCallback = null;
+                this._adCallback = null;    // TODO kills all the adds at start
             } else if (!startCallback || startCallback()) {
                 this.hide();
             }
