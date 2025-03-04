@@ -93,6 +93,7 @@ class GameControlsManager {
     hide() {
         this.introImage.isVisible = false;
         this.controlDialog.isVisible = false;
+        document.body.style.cursor = "default";
     }
 
     addButtons(row) {
