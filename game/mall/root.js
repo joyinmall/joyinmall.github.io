@@ -1,7 +1,7 @@
 
 window.linkRes = (url) => {
     if (window.integrationSite) {
-        return "https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@bfe929c/game/" + url;
+        return "https://cdn.jsdelivr.net/gh/joyinmall/joyinmall.github.io@0e7ef86/game/" + url;
     } else {
         return url;
     }
